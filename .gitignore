@@ -1,0 +1,17 @@
+# Rust
+target/
+**/*.rs.bk
+
+# Node
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deployment artifacts
+# deployments.testnet.json  (tracked in repo)

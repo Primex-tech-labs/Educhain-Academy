@@ -1,0 +1,15 @@
+{
+  "name": "@stellar-did-credit/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Stellar DID Credit Protocol",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^12.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
