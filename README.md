@@ -1,8 +1,8 @@
-![CI](https://github.com/cybermax4200/stellar-did-credit/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Primex-tech-labs/Educhain-Academy/actions/workflows/ci.yml/badge.svg)
 
-# stellar-did-credit
+# Educhain-Academy
 
-A decentralized identity and credit scoring protocol built on Stellar. Users own their financial identity as a cryptographic keypair, collect verifiable credentials from trusted issuers, and receive a portable credit score computed transparently on-chain — no bank account required, no central credit bureau.
+A decentralized learning-credential and skill-scoring protocol built on Stellar. Learners own their academic identity as a cryptographic keypair, collect verifiable credentials (certificates, course completions, skill badges) from trusted issuers, and receive a portable **Skill Score** computed transparently on-chain — no central registrar, no transcript lock-in, no unverifiable CVs.
 
 **Status:** This project is in active development. See [Contributing](#contributing) to get started.
 
@@ -26,11 +26,11 @@ A decentralized identity and credit scoring protocol built on Stellar. Users own
 
 ## The problem
 
-1.4 billion people worldwide are unbanked. Hundreds of millions more are underbanked — they have access to basic accounts but cannot access credit because they have no verifiable financial history. Traditional credit bureaus require years of formal banking records. A smallholder farmer in Nigeria, a gig worker in Kenya, or a merchant in the Philippines may have a decade of reliable financial behavior with zero way to prove it to a lender.
+Learners everywhere complete courses, bootcamps, certifications, and job experience that never translate into portable, verifiable proof of skill. Diplomas sit in siloed registries, certificates are screenshots that anyone can fake, and employers have no way to check whether a candidate's stated skills are real. The people who suffer most are self-taught developers, learners in emerging markets, and career-switchers without formal transcripts — they have the skills but no institution willing to vouch for them.
 
-The result: credit is either unavailable or predatory. Lenders price in maximum risk because they cannot assess individual risk. Borrowers pay the cost.
+The result: talent is filtered by paperwork instead of ability. Employers over-rely on brand-name degrees because they cannot verify anything else, and capable learners are locked out.
 
-This protocol flips the model. Identity and financial history are owned by the individual, anchored on a public ledger, and verifiable by any lender without a central intermediary.
+This protocol flips the model. Learning identity and achievement history are owned by the learner, anchored on a public ledger, and verifiable by any employer, school, or verifier without a central intermediary.
 
 ---
 
@@ -39,13 +39,13 @@ This protocol flips the model. Identity and financial history are owned by the i
 The protocol has three steps:
 
 **1. Get a decentralized identity (DID)**
-A user generates a Stellar keypair. Their public key becomes their DID: `did:stellar:testnet:G...`. They publish a [DID document](docs/did-spec.md#23-complete-example-document) to IPFS and anchor its content hash to the Stellar ledger via the identity-oracle contract. No registration required — the keypair is the identity. See [DID Document Schema](docs/did-spec.md#2-did-document-schema) for the required JSON-LD structure.
+A learner generates a Stellar keypair. Their public key becomes their DID: `did:stellar:testnet:G...`. They publish a [DID document](docs/did-spec.md#23-complete-example-document) to IPFS and anchor its content hash to the Stellar ledger via the identity-oracle contract. No registration required — the keypair is the identity. See [DID Document Schema](docs/did-spec.md#2-did-document-schema) for the required JSON-LD structure.
 
 **2. Collect verifiable credentials (VCs)**
-Trusted issuers — KYC providers, payroll platforms, microfinance institutions, mobile money operators — sign JSON-LD credentials attesting to facts about the user (identity verified, income range, previous repayment history). The SHA-256 hash of each credential is anchored on-chain. The credential itself stays off-chain, preserving privacy.
+Trusted issuers — universities, bootcamps, certifying bodies, training providers, and employers — sign JSON-LD credentials attesting to facts about the learner (course completed, skill mastered, assessment passed, certificate earned). The SHA-256 hash of each credential is anchored on-chain. The credential itself stays off-chain, preserving privacy.
 
-**3. Credit score computed on-chain**
-The credit-oracle Soroban contract aggregates anchored VC hashes, on-chain transaction statistics, and repayment records into a composite score from 300 to 850. Any lender, anchor, or verifier can query the score permissionlessly. The scoring weights are governed and upgradeable.
+**3. Skill Score computed on-chain**
+The credit-oracle Soroban contract aggregates anchored VC hashes, on-chain learning-activity statistics, and completion records into a composite **Skill Score** from 300 to 850. Any employer, school, or verifier can query the score permissionlessly. The scoring weights are governed and upgradeable.
 
 ---
 
@@ -54,20 +54,20 @@ The credit-oracle Soroban contract aggregates anchored VC hashes, on-chain trans
 ```mermaid
 graph TB
     subgraph Off-chain
-        USER[User / DID keypair]
+        USER[Learner / DID keypair]
         ISSUER[Credential Issuer]
         IPFS[(IPFS — DID docs & VCs)]
     end
 
     subgraph Stellar Ledger
         IO[identity-oracle\nDID anchor · VC hash registry]
-        CO[credit-oracle\nScore computation · Repayment history]
+        CO[credit-oracle\nSkill Score computation · Completion history]
         RR[revocation-registry\nVC status list]
     end
 
     subgraph Consumers
-        LENDER[DeFi Lender]
-        ANCHOR[Stellar Anchor]
+        EMPLOYER[Employer / Hiring Platform]
+        SCHOOL[School / Admissions]
         VERIFIER[Third-party Verifier]
     end
 
@@ -78,8 +78,8 @@ graph TB
     IO      -->|is_verified check| CO
     RR      -->|revocation check| IO
     ISSUER  -->|revoke| RR
-    CO      -->|get_score| LENDER
-    CO      -->|get_score| ANCHOR
+    CO      -->|get_score| EMPLOYER
+    CO      -->|get_score| SCHOOL
     IO      -->|verify_vc| VERIFIER
 ```
 
@@ -91,7 +91,7 @@ The protocol is composed of three Soroban smart contracts deployed on the Stella
 
 ### identity-oracle
 
-Manages decentralized identifiers and verifiable credential anchoring.
+Manages decentralized learner identifiers and verifiable credential anchoring.
 
 | Function                                    | Description                                    |
 | ------------------------------------------- | ---------------------------------------------- |
@@ -108,18 +108,18 @@ Manages decentralized identifiers and verifiable credential anchoring.
 
 ### credit-oracle
 
-Computes and stores credit scores based on on-chain data.
+Computes and stores Skill Scores based on on-chain data.
 
 | Function                                             | Description                                        |
 | ---------------------------------------------------- | -------------------------------------------------- |
 | `initialize(admin)`                                  | Sets admin and default scoring weights (40/30/30)  |
-| `register_feeder(admin, feeder)`                     | Registers a trusted transaction stats feeder       |
+| `register_feeder(admin, feeder)`                     | Registers a trusted activity-stats feeder          |
 | `deregister_feeder(admin, feeder)`                   | Revokes a trusted feeder (no retroactive effect)   |
-| `register_lender(admin, lender)`                     | Registers a trusted lender for repayment recording |
-| `deregister_lender(admin, lender)`                   | Revokes a trusted lender (no retroactive effect)   |
-| `update_tx_stats(feeder, subject, stats)`            | Updates 30-day transaction statistics              |
-| `record_repayment(lender, subject, amount, on_time)` | Records a loan repayment outcome                   |
-| `compute_score(subject)`                             | Computes and persists the credit score             |
+| `register_lender(admin, lender)`                     | Registers a trusted issuer for completion recording |
+| `deregister_lender(admin, lender)`                   | Revokes a trusted issuer (no retroactive effect)   |
+| `update_tx_stats(feeder, subject, stats)`            | Updates 30-day learning-activity statistics        |
+| `record_repayment(lender, subject, amount, on_time)` | Records a course/assessment completion outcome     |
+| `compute_score(subject)`                             | Computes and persists the Skill Score              |
 | `get_score(subject)`                                 | Returns the latest ScoreRecord                     |
 | `propose_weights(weights)`                           | Proposes new weights with 24h timelock             |
 | `apply_weights()`                                    | Applies pending weights after timelock expires     |
@@ -155,12 +155,12 @@ Full deployment record: [deployments.testnet.json](deployments.testnet.json). Ru
 
 ## Scoring formula
 
-The credit score ranges from 300 (no history) to 850 (exceptional). It is computed from three weighted components:
+The **Skill Score** ranges from 300 (no history) to 850 (exceptional). It is computed from three weighted components:
 
 ```
 vc_score    = min(vc_count × 20, 100)
-tx_score    = min(volume_30d_stroops ÷ 100_000_000, 100)   # 1 point per XLM, cap 100
-repay_score = (on_time_count × 10000 ÷ total_count) ÷ 100  # 0–100, integer division
+tx_score    = min(volume_30d_stroops ÷ 100_000_000, 100)   # 1 point per XLM of activity, cap 100
+repay_score = (on_time_count × 10000 ÷ total_count) ÷ 100  # 0–100 completion rate, integer division
 
 composite   = (vc_score × vc_weight
              + tx_score × tx_weight
@@ -173,13 +173,13 @@ Default weights: `vc_weight = 40`, `tx_weight = 30`, `repayment_weight = 30`
 
 **Example scores** (all arithmetic uses integer division, matching the contract):
 
-| Profile     | VCs | 30d Volume | Repayment rate | Score |
-| ----------- | --- | ---------- | -------------- | ----- |
-| New user    | 0   | 0 XLM      | —              | 300   |
-| Early stage | 1   | 5 XLM      | 70%            | 465   |
-| Established | 2   | 20 XLM     | 85%            | 558   |
-| Strong      | 3   | 50 XLM     | 95%            | 668   |
-| Exceptional | 5   | 100+ XLM   | 100%           | 850   |
+| Profile          | VCs | 30d Activity | Completion rate | Score |
+| ---------------- | --- | ------------ | --------------- | ----- |
+| New learner      | 0   | 0 XLM        | —               | 300   |
+| Early stage      | 1   | 5 XLM        | 70%             | 465   |
+| Established      | 2   | 20 XLM       | 85%             | 558   |
+| Strong           | 3   | 50 XLM       | 95%             | 668   |
+| Exceptional      | 5   | 100+ XLM     | 100%            | 850   |
 
 Full formula documentation with worked examples: [docs/scoring-spec.md](docs/scoring-spec.md)
 
@@ -198,8 +198,8 @@ Full formula documentation with worked examples: [docs/scoring-spec.md](docs/sco
 
 ```bash
 # Clone the repo
-git clone https://github.com/cybermax4200/stellar-did-credit
-cd stellar-did-credit
+git clone https://github.com/Primex-tech-labs/Educhain-Academy
+cd Educhain-Academy
 
 # Install TypeScript dependencies
 pnpm install
@@ -261,12 +261,12 @@ All tests use Soroban's built-in testutils — no live network required.
 ## Project structure
 
 ```
-stellar-did-credit/
+Educhain-Academy/
 ├── contracts/
 │   ├── identity-oracle/
 │   │   └── src/lib.rs          # DID anchor + VC hash registry
 │   ├── credit-oracle/
-│   │   └── src/lib.rs          # Score computation + repayment history
+│   │   └── src/lib.rs          # Skill Score computation + completion history
 │   ├── revocation-registry/
 │   │   └── src/lib.rs          # VC status list
 │   └── tests/
@@ -290,12 +290,12 @@ stellar-did-credit/
 
 ## TypeScript SDK
 
-The `@stellar-did-credit/sdk` package provides a typed client for interacting with all three contracts from a TypeScript application.
+The `@educhain-academy/sdk` package provides a typed client for interacting with all three contracts from a TypeScript application.
 
 ```typescript
-import { StellarDIDCreditSDK } from "@stellar-did-credit/sdk";
+import { EduchainAcademySDK } from "@educhain-academy/sdk";
 
-const sdk = new StellarDIDCreditSDK({
+const sdk = new EduchainAcademySDK({
   identityOracleId: "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   creditOracleId: "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   revocationRegistryId:
@@ -304,7 +304,7 @@ const sdk = new StellarDIDCreditSDK({
   rpcUrl: "https://soroban-testnet.stellar.org",
 });
 
-// Read a credit score (read-only, no fees)
+// Read a Skill Score (read-only, no fees)
 const score = await sdk.getScore("G...");
 console.log(score.score); // e.g. 612
 ```
@@ -349,7 +349,7 @@ Full TypeScript SDK with DID creation, VC issuance, and revocation. CLI tool for
 credit-oracle reads `vc_count` directly from identity-oracle via cross-contract call. Score freshness enforcement.
 
 **Phase 4 — Privacy layer**
-ZK proof circuit for selective score disclosure — prove "score > 650" without revealing the exact number or underlying credentials.
+ZK proof circuit for selective score disclosure — prove "Skill Score > 650" without revealing the exact number or underlying credentials.
 
 **Phase 5 — Governance**
 DAO contract for scoring weight upgrades. Token-weighted voting. Timelock on changes.
@@ -365,7 +365,7 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and 
 
 ### How to contribute
 
-1. Browse [open issues](https://github.com/cybermax4200/stellar-did-credit/issues) — look for `good first issue` to start
+1. Browse [open issues](https://github.com/Primex-tech-labs/Educhain-Academy/issues) — look for `good first issue` to start
 2. Comment on the issue to signal you're working on it
 3. Fork the repo and create a branch: `git checkout -b feat/your-feature`
 4. Write your code with tests — `cargo test --workspace` must pass

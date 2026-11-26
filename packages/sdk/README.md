@@ -1,19 +1,19 @@
-# @stellar-did-credit/sdk
+# @educhain-academy/sdk
 
-TypeScript SDK for the Stellar DID Credit Protocol.
+TypeScript SDK for the Educhain Academy Protocol.
 
 ## Installation
 
 ```bash
-npm install @stellar-did-credit/sdk
+npm install @educhain-academy/sdk
 ```
 
 ## Usage
 
 ```typescript
-import { StellarDIDCreditSDK } from "@stellar-did-credit/sdk";
+import { EduchainAcademySDK } from "@educhain-academy/sdk";
 
-const sdk = new StellarDIDCreditSDK({
+const sdk = new EduchainAcademySDK({
   identityOracleId: "C...",
   creditOracleId: "C...",
   revocationRegistryId: "C...",
@@ -29,7 +29,7 @@ console.log(score.score); // e.g. 612
 
 ### `getScore(subjectAddress: string): Promise<ScoreRecord>`
 
-Fetches the on-chain credit score for a subject address. Uses a read-only simulation — no signing or fees required.
+Fetches the on-chain skill score for a subject address. Uses a read-only simulation — no signing or fees required.
 
 ```typescript
 interface ScoreRecord {
@@ -71,9 +71,9 @@ const isValid = await sdk.verifyVC("G...", vcHash);
 `getScore()` can throw several types of errors. Applications should catch and distinguish between them:
 
 ```typescript
-import { StellarDIDCreditSDK } from "@stellar-did-credit/sdk";
+import { EduchainAcademySDK } from "@educhain-academy/sdk";
 
-const sdk = new StellarDIDCreditSDK({...});
+const sdk = new EduchainAcademySDK({...});
 
 try {
   const score = await sdk.getScore("G...");

@@ -1,4 +1,4 @@
-# Contributing to stellar-did-credit
+# Contributing to Educhain-Academy
 
 ## ⚠️ Never commit secrets
 
@@ -25,8 +25,8 @@ If you need a throwaway key for testing, generate one with `stellar keys generat
 ## Setup
 
 ```bash
-git clone https://github.com/cybermax4200/stellar-did-credit.git
-cd stellar-did-credit
+git clone https://github.com/Primex-tech-labs/Educhain-Academy.git
+cd Educhain-Academy
 pnpm install
 cargo test --workspace
 ```

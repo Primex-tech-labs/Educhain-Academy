@@ -1,6 +1,6 @@
 # Architecture Overview
 
-stellar-did-credit is a three-contract protocol on Stellar/Soroban that lets any wallet address build a verifiable, portable credit identity. An off-chain TypeScript SDK wraps the contracts for application developers. The contracts are fully independent — each can be upgraded or replaced without breaking the others — and communicate only through explicit cross-contract calls or off-chain coordination via the feeder role.
+Educhain-Academy is a three-contract protocol on Stellar/Soroban that lets any wallet address build a verifiable, portable learning identity. An off-chain TypeScript SDK wraps the contracts for application developers. The contracts are fully independent — each can be upgraded or replaced without breaking the others — and communicate only through explicit cross-contract calls or off-chain coordination via the feeder role.
 
 ---
 
@@ -74,7 +74,7 @@ Stores decentralised identifiers (DIDs) and verifiable credential (VC) anchors f
 
 ### credit-oracle
 
-Computes and stores a credit score (300–850) for any subject address. It relies on three data inputs: VC count (fed by a trusted feeder), transaction statistics (fed by a trusted feeder), and repayment history (recorded by trusted lenders). The scoring formula is deterministic and fully on-chain.
+Computes and stores a skill score (300–850) for any subject address. It relies on three data inputs: VC count (fed by a trusted feeder), transaction statistics (fed by a trusted feeder), and repayment history (recorded by trusted lenders). The scoring formula is deterministic and fully on-chain.
 
 **Key functions**
 

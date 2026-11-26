@@ -1,6 +1,6 @@
 # Scoring Specification
 
-The credit-oracle contract computes a score in the range **`MIN_SCORE` (300)–`MAX_SCORE` (850)**, matching the conventional credit score scale. The formula is deterministic, fully on-chain, and uses only data that has been explicitly submitted by trusted parties (feeders and lenders).
+The credit-oracle contract computes a score in the range **`MIN_SCORE` (300)–`MAX_SCORE` (850)**, matching the conventional skill score scale. The formula is deterministic, fully on-chain, and uses only data that has been explicitly submitted by trusted parties (feeders and lenders).
 
 ---
 
@@ -166,7 +166,7 @@ The feeder is responsible for keeping `TxStats` and `VcCount` current. If the fe
 
 If a subject's VCs are all revoked in identity-oracle, `is_verified` returns `false`. However, the credit-oracle's `VcCount` cache is not automatically updated — it reflects whatever the feeder last submitted via `set_vc_count`.
 
-**Implication:** a lender should always check `is_verified` on identity-oracle independently of the credit score. A high score with `is_verified = false` indicates the feeder has not yet synced the revocation.
+**Implication:** a lender should always check `is_verified` on identity-oracle independently of the skill score. A high score with `is_verified = false` indicates the feeder has not yet synced the revocation.
 
 In the future cross-contract version, `compute_score` will call `get_active_vc_count` directly, eliminating this lag.
 

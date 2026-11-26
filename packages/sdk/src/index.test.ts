@@ -1,4 +1,4 @@
-import { StellarDIDCreditSDK, ScoreNotComputedError } from "./index";
+import { EduchainAcademySDK, ScoreNotComputedError } from "./index";
 
 const mockSimulateTransaction = jest.fn();
 let mockLastContractCall:
@@ -64,7 +64,7 @@ const mockConfig = {
 const subjectAddress =
   "GBUQWP3BOUZX34ULNQG23RQ6F4YUSXHTQSXE7XDZT4A65XJLQRGEZSM";
 
-describe("StellarDIDCreditSDK", () => {
+describe("EduchainAcademySDK", () => {
   beforeEach(() => {
     mockSimulateTransaction.mockReset();
     mockLastContractCall = undefined;
@@ -78,7 +78,7 @@ describe("StellarDIDCreditSDK", () => {
         },
       });
 
-      const sdk = new StellarDIDCreditSDK(mockConfig);
+      const sdk = new EduchainAcademySDK(mockConfig);
       const result = await sdk.verifyVC(subjectAddress, Buffer.alloc(32, 1));
 
       expect(result).toBe(true);
@@ -93,7 +93,7 @@ describe("StellarDIDCreditSDK", () => {
         },
       });
 
-      const sdk = new StellarDIDCreditSDK(mockConfig);
+      const sdk = new EduchainAcademySDK(mockConfig);
       const result = await sdk.verifyVC(subjectAddress, Buffer.alloc(32, 2));
 
       expect(result).toBe(false);
@@ -101,7 +101,7 @@ describe("StellarDIDCreditSDK", () => {
     });
 
     it("rejects non-32-byte credential hashes", async () => {
-      const sdk = new StellarDIDCreditSDK(mockConfig);
+      const sdk = new EduchainAcademySDK(mockConfig);
 
       await expect(sdk.verifyVC(subjectAddress, Buffer.alloc(31))).rejects.toThrow(
         "vcHash must be exactly 32 bytes",
@@ -112,7 +112,7 @@ describe("StellarDIDCreditSDK", () => {
 
   describe("getScore", () => {
     it("throws ScoreNotComputedError when score has not been computed", async () => {
-      const sdk = new StellarDIDCreditSDK(mockConfig);
+      const sdk = new EduchainAcademySDK(mockConfig);
 
       // Mock the server and simulation to return "score not computed" error
       mockSimulateTransaction.mockResolvedValue({

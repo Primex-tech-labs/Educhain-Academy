@@ -32,7 +32,7 @@ export interface ProtocolConfig {
   simAccount: string;
 }
 
-export class StellarDIDCreditSDK {
+export class EduchainAcademySDK {
   constructor(private config: ProtocolConfig) {}
 
   /**
@@ -354,4 +354,4 @@ function parseScoreRecord(scVal: xdr.ScVal, subjectAddress: string): ScoreRecord
   };
 }
 
-export default StellarDIDCreditSDK;
+export default EduchainAcademySDK;

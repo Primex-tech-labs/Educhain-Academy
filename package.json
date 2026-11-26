@@ -1,5 +1,5 @@
 {
-  "name": "stellar-did-credit",
+  "name": "educhain-academy",
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "devDependencies": {

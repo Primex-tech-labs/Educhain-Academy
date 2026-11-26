@@ -1,7 +1,7 @@
 {
-  "name": "@stellar-did-credit/sdk",
+  "name": "@educhain-academy/sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for the Stellar DID Credit Protocol",
+  "description": "TypeScript SDK for the Educhain Academy Protocol",
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc"
