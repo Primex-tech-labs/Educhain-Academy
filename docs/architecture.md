@@ -162,6 +162,9 @@ The subject calls `anchor_did` on identity-oracle with an IPFS CID pointing to t
 
 A trusted issuer (registered by the admin) calls `anchor_vc` with the subject's address and the SHA-256 hash of an off-chain VC JSON. The VC itself stays off-chain; only its hash is stored. After this call, `is_verified(subject)` returns `true`.
 
+The [issuer onboarding guide](issuer-guide.md) walks through registration,
+anchoring, verification, and revocation on testnet.
+
 ### 3. Feeder updates credit inputs
 
 An off-chain indexer (the feeder) monitors the subject's on-chain activity, queries identity-oracle for their VC count, and periodically calls `set_vc_count` and `update_tx_stats` on credit-oracle to keep the scoring inputs fresh.

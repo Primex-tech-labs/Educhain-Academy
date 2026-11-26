@@ -44,6 +44,8 @@ A learner generates a Stellar keypair. Their public key becomes their DID: `did:
 **2. Collect verifiable credentials (VCs)**
 Trusted issuers — universities, bootcamps, certifying bodies, training providers, and employers — sign JSON-LD credentials attesting to facts about the learner (course completed, skill mastered, assessment passed, certificate earned). The SHA-256 hash of each credential is anchored on-chain. The credential itself stays off-chain, preserving privacy.
 
+See the [issuer onboarding guide](docs/issuer-guide.md) for the testnet workflow.
+
 **3. Skill Score computed on-chain**
 The credit-oracle Soroban contract aggregates anchored VC hashes, on-chain learning-activity statistics, and completion records into a composite **Skill Score** from 300 to 850. Any employer, school, or verifier can query the score permissionlessly. The scoring weights are governed and upgradeable.
 
