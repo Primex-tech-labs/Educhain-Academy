@@ -289,37 +289,70 @@ sequenceDiagram
 
 ## Contract calls
 
-`Address`, `String`, and `BytesN<32>` are Soroban types. Read-only calls
-require a simulation source in the CLI but no contract authorization.
+The `admin`, `issuer`, and `subject` parameters are Soroban `Address` values.
+`vc_hash` is `BytesN<32>`, and `did_doc_cid` is a `String`. The CLI needs a
+simulation source for read-only calls, which require no contract authorization.
 
-| Contract | Function | Parameters | Authorization | Result |
-| --- | --- | --- | --- | --- |
-| Identity Oracle | `initialize` | `admin: Address` | Admin (write) | Stores the initial administrator. |
-| Revocation Registry | `initialize` | `admin: Address` | Admin (write) | Stores the initial administrator. |
-| Identity Oracle | `register_issuer` | `admin: Address`, `issuer: Address` | Stored admin (write) | Registers the issuer's address. |
-| Identity Oracle | `anchor_did` (optional) | `subject: Address`, `did_doc_cid: String` | Subject (write) | Stores the DID document CID. |
-| Identity Oracle | `anchor_vc` | `issuer: Address`, `subject: Address`, `vc_hash: BytesN<32>` | Registered issuer (write) | Appends an active anchor. |
-| Identity Oracle | `verify_vc` | `subject: Address`, `vc_hash: BytesN<32>` | None (read) | `bool`, whether an active anchor matches the hash. |
-| Identity Oracle | `is_verified` | `subject: Address` | None (read) | `bool`, whether the learner has any active anchor. |
-| Revocation Registry | `is_revoked` | `vc_hash: BytesN<32>` | None (read) | `bool`, whether the registry flags the hash as revoked. |
-| Revocation Registry | `revoke` | `issuer: Address`, `vc_hash: BytesN<32>` | Supplied issuer (write) | Flags the hash as revoked and records the supplied issuer. |
-| Identity Oracle | `mark_vc_revoked` | `issuer: Address`, `subject: Address`, `vc_hash: BytesN<32>` | Supplied issuer (write) | Revokes any record for the subject matching both issuer and hash. |
-| Identity Oracle | `get_active_vc_count` | `subject: Address` | None (read) | `u32`, number of non-revoked anchors. |
-| Identity Oracle | `get_total_vc_count` | `subject: Address` | None (read) | `u32`, number of all anchors. |
-| Identity Oracle | `get_vc_count` | `subject: Address` | None (read) | `u32`, same total as `get_total_vc_count`. |
+### Identity Oracle
+
+| Function | Parameters in order | Authorization |
+| --- | --- | --- |
+| `initialize` | `admin` | Supplied admin |
+| `register_issuer` | `admin`, `issuer` | Stored admin |
+| `anchor_did` | `subject`, `did_doc_cid` | Subject |
+| `anchor_vc` | `issuer`, `subject`, `vc_hash` | Registered issuer |
+| `mark_vc_revoked` | `issuer`, `subject`, `vc_hash` | Supplied issuer |
+| `verify_vc` | `subject`, `vc_hash` | Read-only |
+| `is_verified` | `subject` | Read-only |
+| `get_active_vc_count` | `subject` | Read-only |
+| `get_total_vc_count` | `subject` | Read-only |
+| `get_vc_count` | `subject` | Read-only |
+
+`initialize` stores the first administrator, and `register_issuer` registers
+the issuer's address. The optional `anchor_did` stores the DID document CID.
+`anchor_vc` appends an active anchor. `mark_vc_revoked` flags records for the
+subject that match both the hash and issuer.
+
+`verify_vc` returns a `bool` for an active anchor matching the hash.
+`is_verified` returns a `bool` for any active anchor for the learner. The
+three count methods return `u32` values. `get_active_vc_count` counts active
+anchors, and `get_total_vc_count` and `get_vc_count` include revoked anchors.
+
+### Revocation Registry
+
+| Function | Parameters in order | Authorization |
+| --- | --- | --- |
+| `initialize` | `admin` | Supplied admin |
+| `revoke` | `issuer`, `vc_hash` | Supplied issuer |
+| `is_revoked` | `vc_hash` | Read-only |
+
+`initialize` stores the first administrator. `revoke` flags the hash as
+revoked and records the supplied issuer. `is_revoked` returns a `bool` for
+whether the registry flags the hash as revoked.
 
 ## Troubleshooting
 
-| Symptom | What to check |
-| --- | --- |
-| Account is missing or unfunded | Run `stellar keys fund "$ISSUER_KEY" --network testnet` for the affected testnet identity, substituting its alias. |
-| Contract cannot be found | Check the network, the contract ID, and whether the instance still exists after a testnet reset. |
-| Registration fails with `not initialized` | Initialize your freshly deployed Identity Oracle, or ask the administrator to check their existing instance. `AlreadyInitialized` means the instance already has an administrator. |
-| `NotAuthorized` or transaction authorization fails | Check the stored admin or original issuer address and confirm the signing alias resolves to the required public address. |
-| `IssuerNotRegistered` | Ask the stored admin to register the exact issuer address on this Identity Oracle and wait for confirmation. |
-| Invalid hash length or anchor lookup returns `false` | Check for 64 hex characters and recompute the digest from the exact original file. Confirm the learner address, contract ID, and network. |
-| Write fails, times out, or is pending | Read the CLI error and look up the transaction hash with [Stellar RPC `getTransaction`][rpc-transaction]. Wait for `SUCCESS` or diagnose `FAILED` before retrying. |
-| Revocation reads disagree | Check both transactions and verify the original issuer, subject, and digest. Complete the missing operation and rerun both status checks. |
+- For a missing or unfunded account, run
+  `stellar keys fund "$ISSUER_KEY" --network testnet` with the affected alias.
+- If the contract is missing, check its ID and network. A testnet reset can
+  remove an existing instance.
+- If registration reports `not initialized`, initialize your fresh Identity
+  Oracle or ask the administrator to check their instance. `AlreadyInitialized`
+  means the instance already has an administrator.
+- For `NotAuthorized` or a transaction authorization failure, check the stored
+  admin or original issuer address. The signing alias must resolve to the
+  required public address.
+- For `IssuerNotRegistered`, ask the stored admin to register the exact issuer
+  address on this Identity Oracle and wait for confirmation.
+- For an invalid hash length or unexpected `false` anchor lookup, check that
+  the digest has 64 hex characters and recompute it from the original file.
+  Confirm the learner address, contract ID, and network.
+- If a write fails, times out, or is pending, check the CLI error and look up
+  the transaction hash with [Stellar RPC `getTransaction`][rpc-transaction].
+  Wait for `SUCCESS` or diagnose `FAILED` before retrying.
+- If the revocation reads disagree, check both transactions and confirm the
+  original issuer, subject, and digest. Complete the missing write and rerun
+  both status checks.
 
 ## References
 
