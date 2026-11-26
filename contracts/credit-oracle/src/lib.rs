@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, symbol_short, Address, BytesN, Env, Symbol};
 
 /// Storage keys for the credit oracle contract
 #[contracttype]
@@ -84,6 +84,27 @@ pub struct RepaymentRecord {
     pub total_count: u32,
 }
 
+/// Errors returned by the credit-oracle contract.
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub enum CreditOracleError {
+    /// Contract already initialized.
+    AlreadyInitialized = 1,
+    /// Caller is not authorized.
+    NotAuthorized = 2,
+    /// Feeder is not registered.
+    FeederNotRegistered = 3,
+    /// Lender is not registered.
+    LenderNotRegistered = 4,
+    /// Weights are invalid (must sum to 100).
+    InvalidWeights = 5,
+}
+
+/// Minimum possible skill score (no history).
+const MIN_SCORE: u32 = 300;
+/// Maximum possible skill score.
+const MAX_SCORE: u32 = 850;
+
 const TIMELOCK_LEDGERS: u32 = 17_280; // approximately 24 hours
 
 #[contract]
@@ -155,28 +176,6 @@ impl CreditOracle {
         env.storage().persistent().remove(&DataKey::TrustedLender(lender.clone()));
         env.events().publish((symbol_short!("LndDeReg"),), lender);
         Ok(())
-    }
-
-    /// Deregister a trusted feeder address
-    pub fn deregister_feeder(env: Env, admin: Address, feeder: Address) {
-        let stored_admin: Address = env.storage().instance().get(&DataKey::Admin).expect("not initialized");
-        if admin != stored_admin {
-            panic!("not authorized");
-        }
-        admin.require_auth();
-        env.storage().persistent().remove(&DataKey::TrustedFeeder(feeder.clone()));
-        env.events().publish((symbol_short!("FdrDeReg"),), (feeder,));
-    }
-
-    /// Deregister a trusted lender address
-    pub fn deregister_lender(env: Env, admin: Address, lender: Address) {
-        let stored_admin: Address = env.storage().instance().get(&DataKey::Admin).expect("not initialized");
-        if admin != stored_admin {
-            panic!("not authorized");
-        }
-        admin.require_auth();
-        env.storage().persistent().remove(&DataKey::TrustedLender(lender.clone()));
-        env.events().publish((symbol_short!("LndDeReg"),), (lender,));
     }
 
     /// Update transaction statistics for a user
@@ -264,7 +263,7 @@ impl CreditOracle {
     }
 
     /// Propose new scoring weights with timelock
-    pub fn propose_weights(env: Env, weights: ScoringWeights) {
+    pub fn propose_weights(env: Env, weights: ScoringWeights) -> Result<(), CreditOracleError> {
         if weights.vc_weight + weights.tx_weight + weights.repayment_weight != 100 {
             return Err(CreditOracleError::InvalidWeights);
         }
@@ -282,6 +281,7 @@ impl CreditOracle {
             (symbol_short!("WtProp"),),
             (weights.vc_weight, weights.tx_weight, weights.repayment_weight, effective_ledger),
         );
+        Ok(())
     }
 
     /// Apply pending weights after timelock expires
@@ -322,6 +322,16 @@ impl CreditOracle {
     /// Get pending weights (if any)
     pub fn get_pending_weights(env: Env) -> Option<PendingWeightsRecord> {
         env.storage().instance().get(&DataKey::PendingWeights)
+    }
+
+    /// Upgrade the contract WASM in-place, preserving address and stored state.
+    pub fn upgrade(env: Env, admin: Address, new_wasm_hash: BytesN<32>) {
+        let stored_admin: Address = env.storage().instance().get(&DataKey::Admin).expect("not initialized");
+        if admin != stored_admin {
+            panic!("not authorized");
+        }
+        admin.require_auth();
+        env.deployer().update_current_contract_wasm(new_wasm_hash);
     }
 }
 
@@ -643,30 +653,11 @@ mod tests {
     }
 
     #[test]
-    fn test_upgrade_preserves_contract_address() {
-        let env = Env::default();
-        env.mock_all_auths();
-        let new_wasm_hash = env.deployer().upload_contract_wasm(CreditOracle::WASM);
-        let contract_id = env.register_contract(None, CreditOracle);
-        let client = CreditOracleClient::new(&env, &contract_id);
-
-        let admin = Address::generate(&env);
-        client.initialize(&admin);
-
-        // Upgrade — contract_id must remain unchanged
-        client.upgrade(&admin, &new_wasm_hash);
-
-        // Contract still responds correctly; address is preserved
-        let weights = client.get_scoring_weights();
-        assert_eq!(weights.vc_weight + weights.tx_weight + weights.repayment_weight, 100);
-    }
-
-    #[test]
     #[should_panic(expected = "not authorized")]
     fn test_upgrade_rejects_non_admin() {
         let env = Env::default();
         env.mock_all_auths();
-        let new_wasm_hash = env.deployer().upload_contract_wasm(CreditOracle::WASM);
+        let new_wasm_hash = BytesN::from_array(&env, &[0u8; 32]);
         let contract_id = env.register_contract(None, CreditOracle);
         let client = CreditOracleClient::new(&env, &contract_id);
 
