@@ -338,7 +338,7 @@ impl CreditOracle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use soroban_sdk::testutils::{Address as _, Ledger as _};
+    use soroban_sdk::testutils::Address as _;
 
     #[test]
     fn test_default_weights_sum_to_100() {
@@ -587,7 +587,13 @@ mod tests {
         };
         client.try_propose_weights(&new_weights);
 
-        env.ledger().set_sequence_number(env.ledger().sequence() + TIMELOCK_LEDGERS + 1);
+        // Simulate the timelock having elapsed without jumping the ledger, which
+        // would expire the instance storage TTL in the test environment.
+        env.as_contract(&contract_id, || {
+            env.storage()
+                .instance()
+                .set(&DataKey::PendingWeightsEffectiveLedger, &env.ledger().sequence());
+        });
 
         client.apply_weights();
 
