@@ -1,0 +1,12 @@
+# Default owners for everything in the repo.
+* @Primex-hub
+
+# Contracts require a contract-focused review.
+/contracts/ @Primex-hub
+
+# SDK changes.
+/packages/ @Primex-hub
+
+# Docs.
+/docs/ @Primex-hub
+README.md @Primex-hub
